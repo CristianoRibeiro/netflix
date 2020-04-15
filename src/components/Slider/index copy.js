@@ -2,19 +2,23 @@ import React, { Component } from 'react';
 import { ScrollView, Dimensions } from 'react-native';
 
 import { Container, ImageSlider, Circle, ContentCircle } from './styles';
+import api from '../../services/api';
 
 const DEVICE_WIDTH = Dimensions.get('window').width;
 
+const API_KEY = 'api_key=f2f6bad835f0eb1a657e213f7f863e6b&language=pt-BR';
+const IMAGE = 'https://image.tmdb.org/t/p/w500/';
+
 export default class Slider extends Component {
- scrollRef = React.createRef();
+  scrollRef = React.createRef();
 
   state = {
-    selectedIndex: 0
+    selectedIndex: 0,
+    imageSlide: [],
   }
-
-  componentDidMount = () => {
+  async componentDidMount() {
     setInterval(() => {
-      this.setState(prev => ({selectedIndex: prev.selectedIndex === this.props.images.length - 1? 0 : prev.selectedIndex + 1}),
+      this.setState(prev => ({selectedIndex: prev.selectedIndex === this.state.imageSlide.length - 1? 0 : prev.selectedIndex + 1}),
       () => {
         this.scrollRef.current.scrollTo({
           animated: true,
@@ -22,8 +26,22 @@ export default class Slider extends Component {
           x: DEVICE_WIDTH * this.state.selectedIndex
         })
       })
-    }, 1000);
+    }, 5000);
+
+    this._getData();
+
   }
+
+   _getData = async () => {
+    try {
+      let response = await api.get('trending/movie/day?'+ API_KEY);
+      // console.tron.log(response.data);
+      this.setState({imageSlide: response.data.results})
+    } catch (error) {
+
+    }
+  }
+
 
 
   setSelectedIndex = (event) => {
@@ -35,10 +53,7 @@ export default class Slider extends Component {
   }
 
   render() {
-    const { images} = this.props;
-    const { selectedIndex } = this.state;
-    // console.tron.log(imageSlide)
-
+    const { selectedIndex, imageSlide } = this.state;
     return (
       <Container>
         <ScrollView
@@ -48,17 +63,17 @@ export default class Slider extends Component {
           onMomentumScrollEnd={this.setSelectedIndex}
           ref={this.scrollRef}
         >
-          {images.map(image => (
+          {imageSlide.map(image => (
             <ImageSlider
               key={image}
               style={{ height: 200, width: DEVICE_WIDTH }}
-              source={{ uri: image }}
+              source={{ uri: IMAGE+image.backdrop_path }}
             />
           ))}
         </ScrollView>
 
         <Circle>
-          {images.map((image, i) => (
+          {imageSlide.map((image, i) => (
             <ContentCircle
               key={image}
               style={{

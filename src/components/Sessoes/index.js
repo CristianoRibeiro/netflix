@@ -1,54 +1,47 @@
-import React, { Component } from 'react';
+import React from 'react';
 
-import { FlatList, Image, Dimensions, View, Text } from 'react-native';
+import { FlatList, Image, View, Text } from 'react-native';
 
-import { Link } from './styles';
-const imageLow = require('../../assets/images/movies.jpg');
+import {
+  Button,
+  Container,
+  Cartaz,
+  ImageContent,
+  Genero,
+  GeneroContent,
+} from './styles';
 
-export default class Sessoes extends Component {
-  constructor(props) {
-    super(props);
+const IMAGE = 'https://image.tmdb.org/t/p/w500/';
+
+export default function Sessoes({ genero, data, navigate }) {
+  function handleScreen(item, index) {
+    // console.tron.log(item);
+    return navigate.navigation.navigate('Detail', { item, index });
   }
-
-
-   _renderItem = (item, index) => {
-            return (
-              <Link
-                key={index}
-                onPress={() => _handleScreen(item)}>
-                <View
-                  style={{
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginVertical: 10,
-                    marginHorizontal: 5,
-                  }}>
-                  <Image
-                    source={{uri: item.imageUrl}}
-                    style={{
-                      height: 250,
-                      width: 150,
-
-                    }}
-                    resizeMode="contain"
-                  />
-                  <Text style={{color: '#fff'}}> {item.title} </Text>
-                </View>
-              </Link>
-            );
-          }
-
-  render() {
-    const { data } = this.props;
+  function renderItem(item, index) {
     return (
-      <View style={{marginBottom: 4, marginHorizontal: 0}}>
-          <FlatList
-            data={data}
-            horizontal={true}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({item, index}) => this._renderItem(item, index)}
+      <Button key={index} onPress={() => handleScreen(item, index)}>
+        <Cartaz>
+          <ImageContent
+            source={{ uri: IMAGE + item.poster_path }}
+            resizeMode="contain"
           />
-        </View>
+        </Cartaz>
+      </Button>
     );
   }
+
+  return (
+    <Container>
+      <Genero>
+        <GeneroContent>{genero.name}</GeneroContent>
+      </Genero>
+      <FlatList
+        data={data}
+        horizontal
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item, index }) => renderItem(item, index)}
+      />
+    </Container>
+  );
 }

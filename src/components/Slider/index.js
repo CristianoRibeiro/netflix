@@ -1,88 +1,42 @@
-import React, { Component } from 'react';
-import { ScrollView, Dimensions } from 'react-native';
+import React from 'react';
+import Carousel from 'react-native-banner-carousel';
 
-import { Container, ImageSlider, Circle, ContentCircle } from './styles';
-import api from '../../services/api';
-
-const DEVICE_WIDTH = Dimensions.get('window').width;
+import { Image, View, Dimensions } from 'react-native';
+import { Container, Descrition, DescriptionContent } from './styles';
 
 const API_KEY = 'api_key=f2f6bad835f0eb1a657e213f7f863e6b&language=pt-BR';
 const IMAGE = 'https://image.tmdb.org/t/p/w500/';
 
-export default class Slider extends Component {
-  scrollRef = React.createRef();
+const BannerWidth = Dimensions.get('window').width;
+const BannerHeight = 300;
 
-  state = {
-    selectedIndex: 0,
-    imageSlide: [],
-  }
-  async componentDidMount() {
-    setInterval(() => {
-      this.setState(prev => ({selectedIndex: prev.selectedIndex === this.state.imageSlide.length - 1? 0 : prev.selectedIndex + 1}),
-      () => {
-        this.scrollRef.current.scrollTo({
-          animated: true,
-          y: 0,
-          x: DEVICE_WIDTH * this.state.selectedIndex
-        })
-      })
-    }, 5000);
-
-    this._getData();
-
-  }
-
-   _getData = async () => {
-    try {
-      let response = await api.get('trending/movie/day?'+ API_KEY);
-      // console.tron.log(response.data);
-      this.setState({imageSlide: response.data.results})
-    } catch (error) {
-
-    }
-  }
-
-
-
-  setSelectedIndex = (event) => {
-    const viewSize = event.nativeEvent.layoutMeasurement.width;
-    const contentoffset = event.nativeEvent.contentOffset.x;
-
-    const selectedIndex = Math.floor(contentoffset / viewSize);
-    this.setState({selectedIndex});
-  }
-
-  render() {
-    const { selectedIndex, imageSlide } = this.state;
+export default function Slider(props) {
+  function renderPage(image, index) {
     return (
-      <Container>
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onMomentumScrollEnd={this.setSelectedIndex}
-          ref={this.scrollRef}
-        >
-          {imageSlide.map(image => (
-            <ImageSlider
-              key={image}
-              style={{ height: 200, width: DEVICE_WIDTH }}
-              source={{ uri: IMAGE+image.backdrop_path }}
-            />
-          ))}
-        </ScrollView>
+      <View key={index}>
+        <Descrition>
+          <DescriptionContent>{image.title}</DescriptionContent>
+        </Descrition>
 
-        <Circle>
-          {imageSlide.map((image, i) => (
-            <ContentCircle
-              key={image}
-              style={{
-                opacity: i === selectedIndex ? 0.5 : 1,
-              }}
-            />
-          ))}
-        </Circle>
-      </Container>
+        <Image
+          style={{ width: BannerWidth, height: BannerHeight }}
+          source={{ uri: IMAGE + image.backdrop_path }}
+        />
+      </View>
     );
   }
+
+  return (
+    <Container>
+      <Carousel
+        autoplay
+        autoplayTimeout={5000}
+        loop
+        index={0}
+        pageSize={BannerWidth}
+      >
+        {props.images.map((image, index) => renderPage(image, index))}
+      </Carousel>
+    </Container>
+  );
 }

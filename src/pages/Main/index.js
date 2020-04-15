@@ -1,94 +1,65 @@
-import React, { Component } from 'react';
-import { View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+
+import { ScrollView } from 'react-native';
+
 import Slider from '../../components/Slider';
 import Sessoes from '../../components/Sessoes';
 import { Container } from './styles';
 import api from '../../services/api';
 
 const API_KEY = 'api_key=f2f6bad835f0eb1a657e213f7f863e6b&language=pt-BR';
-const IMAGE = 'https://image.tmdb.org/t/p/w500/';
 
-const data = [
-  {
-    imageUrl: 'http://via.placeholder.com/150x250',
-    title: 'something',
-  },
-  {
-    imageUrl: 'http://via.placeholder.com/150x250',
-    title: 'something two',
-  },
-  {
-    imageUrl: 'http://via.placeholder.com/150x250',
-    title: 'something three',
-  },
-  {
-    imageUrl: 'http://via.placeholder.com/150x250',
-    title: 'something four',
-  },
-  {
-    imageUrl: 'http://via.placeholder.com/150x250',
-    title: 'something five',
-  },
-  {
-    imageUrl: 'http://via.placeholder.com/150x250',
-    title: 'something six',
-  },
-];
-export default class Main extends Component {
-  state = {
-    discover: [],
-    genre: [],
-  }
-  async componentDidMount() {
-    this._getData();
-  }
+export default function Main(props) {
+  const [discover, setDiscovers] = useState([]);
+  const [genre, setGenres] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [banner, setBanners] = useState([]);
 
-   _getData = async () => {
+  useEffect(() => {
+    getData();
+  }, []);
+
+  async function getData() {
     try {
-      let responseDiscover = await api.get('discover/movie?'+ API_KEY);
+      const filmes = await api.get(`discover/movie?${API_KEY}`);
+      const generos = await api.get(`genre/movie/list?${API_KEY}`);
+      const bannerResponse = await api.get(`trending/movie/day?${API_KEY}`);
 
-      let responseGenre = await api.get('genre/movie/list?'+ API_KEY);
+      generos.data.genres.map((genero, index) => {
+        categorias.push({ genero, filmes: [] });
 
-
-      this.setState({
-        discover: responseDiscover.data.results,
-        genre: responseGenre.data.genres
+        filmes.data.results.map(filme => {
+          filme.genre_ids.map(genre_id => {
+            if (genero.id === genre_id) {
+              categorias[index].filmes.push(filme);
+            }
+          });
+        });
       });
 
-
-    } catch (error) {
-
-    }
+      setDiscovers(filmes.data.results);
+      setGenres(generos.data.genres);
+      setCategorias(categorias);
+      setBanners(bannerResponse.data.results);
+    } catch (error) {}
   }
 
-  render() {
-
-    const { genre, discover } = this.state;
-
-    return (
-      <Container>
-        <Slider />
-        {
-          discover.map((discove) => {
-            discove.genre_ids.map((genrer_id) => {
-              genre.map((genero) => {
-
-
-                  if(genrer_id === genero.id){
-                    console.tron.log(genero);
-                    console.tron.log(discove);
-
-                  }
-
-              });
-              // if(genrer_id)
-
-
-            })
-          })
-        }
-        <Sessoes data={data} />
-      </Container>
-    );
-  }
+  return (
+    <Container>
+      <ScrollView>
+        <Slider images={banner} />
+        {categorias.map((data, index) => {
+          if (data.filmes.length !== 0)
+            return (
+              <Sessoes
+                key={index}
+                data={data.filmes}
+                genero={data.genero}
+                navigate={props}
+              />
+            );
+        })}
+      </ScrollView>
+    </Container>
+  );
 }

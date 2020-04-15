@@ -4,7 +4,7 @@ import { Dimensions } from 'react-native';
 const DEVICE_WIDTH = Dimensions.get('window').width;
 
 export const Container = styled.View`
-  height: 200px;
+  height: 300px;
 `;
 
 export const ImageSlider = styled.Image``;
@@ -26,4 +26,19 @@ export const ContentCircle = styled.View`
   border-radius: 3px;
   margin: 5px;
   background-color: #fff;
+`;
+
+export const Descrition = styled.View`
+  position: absolute;
+  z-index: 2;
+  width: 100%;
+  padding: 10px;
+  bottom: 10px;
+`;
+
+export const DescriptionContent = styled.Text`
+  color: #fff;
+  font-size: 25px;
+  text-shadow: 2px 4px 2px rgba(0, 0, 0, 0.19);
+  font-weight: bold;
 `;
